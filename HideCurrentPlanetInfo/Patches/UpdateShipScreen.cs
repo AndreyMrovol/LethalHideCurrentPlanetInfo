@@ -16,7 +16,6 @@ namespace HideCurrentPlanetInfo.Patches
 			string newScreenText = screenText;
 
 			Regex regex = new(@"(?<=^(?!ORBITING|WEATHER)[A-Z]+\:\ ).+$", RegexOptions.Multiline);
-			Regex orbitWeatherRegex = new(@"^ORBITING|WEATHER");
 
 			Color textColor = new(0.6f, 0.3f, 0.4f, 1);
 			string redactedText = $"<color=#{ColorUtility.ToHtmlStringRGB(textColor)}>[REDACTED]</color>";
@@ -29,14 +28,10 @@ namespace HideCurrentPlanetInfo.Patches
 			{
 				Plugin.logger.LogInfo($"Match: {match.Value}");
 				Plugin.logger.LogDebug($"{ConfigManager.HiddenMoonInfo.Value}");
-				Plugin.logger.LogDebug($"{orbitWeatherRegex.IsMatch(match.Value)}");
 
 				if (ConfigManager.HiddenMoonInfo.Value)
 				{
-					if (!orbitWeatherRegex.IsMatch(match.Value))
-					{
-						newScreenText = regex.Replace(newScreenText, redactedText);
-					}
+					newScreenText = regex.Replace(newScreenText, redactedText);
 				}
 			}
 
