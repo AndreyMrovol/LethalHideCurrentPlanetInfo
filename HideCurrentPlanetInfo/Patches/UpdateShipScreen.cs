@@ -1,6 +1,9 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using HarmonyLib;
+using TMPro;
 using UnityEngine;
+using WeatherRegistry;
 
 namespace HideCurrentPlanetInfo.Patches
 {
@@ -12,21 +15,46 @@ namespace HideCurrentPlanetInfo.Patches
 
 			string newScreenText = screenText;
 
-			Regex regex = new(@"(?<=^[A-Z]+\:\ ).+$", RegexOptions.Multiline);
+			Regex regex = new(@"(?<=^(?!ORBITING|WEATHER)[A-Z]+\:\ ).+$", RegexOptions.Multiline);
+			Regex orbitWeatherRegex = new(@"^ORBITING|WEATHER");
 
 			Color textColor = new(0.6f, 0.3f, 0.4f, 1);
+			string redactedText = $"<color=#{ColorUtility.ToHtmlStringRGB(textColor)}>[REDACTED]</color>";
 
-			// log the regex matches
+			// conditions based on config
 			MatchCollection matches = regex.Matches(screenText);
+			Plugin.logger.LogWarning($"Match count: {matches.Count}");
 
 			foreach (Match match in matches)
 			{
 				Plugin.logger.LogInfo($"Match: {match.Value}");
-				newScreenText = newScreenText.Replace(match.Value, $"<color=#{ColorUtility.ToHtmlStringRGB(textColor)}>[REDACTED]</color>");
+				Plugin.logger.LogDebug($"{ConfigManager.HiddenMoonInfo.Value}");
+				Plugin.logger.LogDebug($"{orbitWeatherRegex.IsMatch(match.Value)}");
+
+				if (ConfigManager.HiddenMoonInfo.Value)
+				{
+					if (!orbitWeatherRegex.IsMatch(match.Value))
+					{
+						newScreenText = regex.Replace(newScreenText, redactedText);
+					}
+				}
 			}
 
-			// replace all matches with [REDACTED]
-			// newScreenText = regex.Replace(screenText, "[REDACTED]");
+			if (ConfigManager.HiddenMoon.Value)
+			{
+				Regex moonRegex = new(@"(?<=ORBITING\:\ ).+$", RegexOptions.Multiline);
+				// replace all matches with [REDACTED]
+
+				newScreenText = moonRegex.Replace(newScreenText, redactedText);
+			}
+
+			if (ConfigManager.HiddenWeather.Value)
+			{
+				Regex weatherRegex = new(@"(?<=WEATHER\:\ ).+$", RegexOptions.Multiline);
+				// replace all matches with [REDACTED]
+
+				newScreenText = weatherRegex.Replace(weatherRegex.Match(newScreenText).Value, redactedText);
+			}
 
 			Plugin.logger.LogWarning($"Screen text:\n{screenText}\n->\n{newScreenText}\n");
 

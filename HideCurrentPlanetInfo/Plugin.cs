@@ -17,6 +17,8 @@ namespace HideCurrentPlanetInfo
 		{
 			harmony.PatchAll();
 
+			ConfigManager.Init(Config);
+
 			WeatherRegistry.EventManager.MapScreenUpdated.AddListener(
 				(data) => ShipScreenPatch.ScreenUpdatePatch(data.level, data.weather, data.screenText)
 			);
