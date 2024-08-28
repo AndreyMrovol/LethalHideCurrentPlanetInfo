@@ -48,7 +48,7 @@ namespace HideCurrentPlanetInfo.Patches
 				Regex weatherRegex = new(@"(?<=WEATHER\:\ ).+$", RegexOptions.Multiline);
 				// replace all matches with [REDACTED]
 
-				newScreenText = weatherRegex.Replace(weatherRegex.Match(newScreenText).Value, redactedText);
+				newScreenText = weatherRegex.Replace(newScreenText, redactedText);
 			}
 
 			Plugin.logger.LogWarning($"Screen text:\n{screenText}\n->\n{newScreenText}\n");
